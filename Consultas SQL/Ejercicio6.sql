@@ -7,3 +7,5 @@ AND p.codpropiedad = i.codpropiedad (+)
 AND p.codcomunidad = i.codcomunidad (+)
 GROUP BY c.codcomunidad
 ORDER BY c.codcomunidad;
+
+-- Fran
