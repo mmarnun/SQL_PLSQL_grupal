@@ -11,3 +11,5 @@ WHERE DNI IN (SELECT DNI
               AND (nombre_cargo = 'Presidente'
               OR nombre_cargo = 'Vicepresidente'
               OR nombre_cargo = 'Vocal'));
+
+-- Fran
