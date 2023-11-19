@@ -1,3 +1,5 @@
+--5. Añade una columna ImportePendiente en la columna Propietarios y rellénalo con la suma de los importes de los recibo pendientes de pago de cada propietario. Realiza los módulos de programación necesarios para que los datos del a columna sean siempre coherentes con los datos que se encuentran en la tabla Recibos
+
 ALTER TABLE propietarios
 ADD ImportePendiente NUMBER (10,2)
 
@@ -41,3 +43,5 @@ BEGIN
     actualizar_ImportePendiente;
 END;
 /
+
+-- Fran
