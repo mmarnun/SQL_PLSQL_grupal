@@ -10,7 +10,7 @@ WHERE p.DNI IN (SELECT DNI
                                    WHERE codpropiedad IN (SELECT DISTINCT codpropiedad
                                                           FROM inquilinos))
               GROUP BY DNI, pagado
-              HAVING count(*) >= 3)
+              HAVING count(*) > 3)
 AND p.DNI IN (SELECT DNI
             FROM historial_cargos
             WHERE codcomunidad IN (SELECT codcomunidad
