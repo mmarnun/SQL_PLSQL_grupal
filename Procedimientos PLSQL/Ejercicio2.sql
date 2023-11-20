@@ -87,7 +87,22 @@ END;
 /
 
 CREATE OR REPLACE PROCEDURE Mostrar_Cabecera(p_tipo NUMBER, p_codcomunidad comunidades.codcomunidad%TYPE, p_fecha DATE DEFAULT sysdate) AS
+    v_nombre_comunidad comunidades.nombre%TYPE;
+    v_codpostal
 BEGIN
+    SELECT nombre INTO v_nombre_comunidad
+    FROM comunidad
+    WHERE codcomunidad = p_codcomunidad;
+
+    SELECT codigopostal INTO v_codpostal
+    FROM comunidad
+    WHERE codcomunidad = p_codcomunidad;
+
+    dbms_output.put_line('Comunidad: ' || v_nombre_comunidad);
+    dbms_output.put_line('Población Comunidad: ' || v_codpostal);
+    IF p_tipo != 3 THEN
+    dbms_output.put_line('Fecha: ' || p_fecha);
+    END IF;
 END;
 /
 
