@@ -54,3 +54,54 @@ Porcentaje de Participación Total Propietario1: nn,nn %
 Propietario2: D. xxxxx xxxxxxxx xxxxxxxxxx
 ...
 */
+
+
+-- Solo el esqueleto de momento
+
+CREATE OR REPLACE PROCEDURE MostrarInformes (p_tipo NUMBER, p_codcomunidad comunidades.codcomunidad%TYPE, p_fecha DATE DEFAULT sysdate) AS
+BEGIN
+    CASE
+    WHEN p_tipo = 1 THEN
+        IF p_fecha = sysdate THEN
+            RAISE_APPLICATION_ERROR (20001, 'Se debe especificar la fecha de la junta directiva como tercer parámetro en informes de tipo 1.');
+        END IF;
+            dbms_output.put_line('INFORME DE CARGOS');
+            Mostrar_Cabecera (p_tipo, p_comunidad, p_fecha);
+            Mostrar_Info1(p_comunidad);
+    WHEN p_tipo = 2 THEN
+            dbms_output.put_line('INFORME DE RECIBOS IMPAGADOS');
+            Mostrar_Cabecera (p_tipo, p_comunidad, p_fecha);
+            Mostrar_Info2(p_comunidad);
+    WHEN p_tipo = 3 THEN
+            dbms_output.put_line('INFORME DE PROPIEDADES');
+            Mostrar_Cabecera (p_tipo, p_comunidad, p_fecha);
+            Mostrar_Info3(p_comunidad);
+    ELSE
+        IF p_comunidad = NULL THEN
+            RAISE_APPLICATION_ERROR (20002, 'Uso: exec MostrarInformes < 1 | 2 | 3 > <codcomunidad> [Fecha]');
+        ELSE
+            RAISE_APPLICATION_ERROR (20003, 'El tipo de informe especificado no existe');
+        END IF;
+    END CASE;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE Mostrar_Cabecera(p_tipo NUMBER, p_codcomunidad comunidades.codcomunidad%TYPE, p_fecha DATE DEFAULT sysdate) AS
+BEGIN
+END;
+/
+
+CREATE OR REPLACE PROCEDURE Mostrar_info1(p_codcomunidad comunidades.codcomunidad%TYPE) AS
+BEGIN
+END;
+/
+
+CREATE OR REPLACE PROCEDURE Mostrar_info2(p_codcomunidad comunidades.codcomunidad%TYPE) AS
+BEGIN
+END;
+/
+
+CREATE OR REPLACE PROCEDURE Mostrar_info3(p_codcomunidad comunidades.codcomunidad%TYPE) AS
+BEGIN
+END;
+/
