@@ -34,7 +34,7 @@ create or replace package body gestion_recibos is
   is
     v_rfecha number := 0;
   begin
-    for i in 1..tabla_recibos.count loop -- con un bucle for recorremos la t_recibos desde el primer elemento hasta el ultimo que cuente, para ello usamos "1."" hasta el ultimo elemento "".tabla_recibos.count" que contará todos los elementos a recorrer
+    for i in 1..tabla_recibos.last loop -- con un bucle for recorremos la t_recibos desde el primer elemento hasta el ultimo que cuente, para ello usamos "1."" hasta el ultimo elemento "".tabla_recibos.count" que contará todos los elementos a recorrer
       if tabla_recibos(i).dni = p_dni and tabla_recibos(i).codcomunidad = p_codcomunidad then -- aqui verifica que coinciden los datos de tabla_recibos y los parametros a introducir coindicen
         if p_fecha between tabla_recibos(i).fecha and tabla_recibos(i).fecha + 30 then -- aqui verifica que si la fecha está dentro de los 30 dias pues v_rfecha cambia a 1
           v_rfecha := 1;
