@@ -30,7 +30,7 @@ update Administradores set email='tomasadmin@gmail.com' where dni='23229791T';
 @$ORACLE_HOME/rdbms/admin/prvtmail.plb
 
 alter session set "_ORACLE_SCRIPT"=TRUE;
-grant execute on utl_mail to alfonso;
+grant execute on utl_mail to alex;
 
 create or replace function devolver_email_propietario_presi(p_codcomunidad in varchar2) return propietarios.email%type
 is
