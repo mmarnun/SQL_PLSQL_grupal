@@ -70,11 +70,11 @@ BEGIN
     WHEN p_tipo = 2 THEN
             dbms_output.put_line('INFORME DE RECIBOS IMPAGADOS');
             Mostrar_Cabecera (p_tipo, p_codcomunidad, p_fecha);
-            Mostrar_Info2(p_codcomunidad);
+--            Mostrar_Info2(p_codcomunidad);
     WHEN p_tipo = 3 THEN
             dbms_output.put_line('INFORME DE PROPIEDADES');
             Mostrar_Cabecera (p_tipo, p_codcomunidad, p_fecha);
-            Mostrar_Info3(p_codcomunidad);
+--            Mostrar_Info3(p_codcomunidad);
     ELSE
         IF p_codcomunidad = NULL THEN
             RAISE_APPLICATION_ERROR (20002, 'Uso: exec MostrarInformes < 1 | 2 | 3 > <codcomunidad> [Fecha]');
