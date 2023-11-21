@@ -174,6 +174,16 @@ BEGIN
 END;
 /
 
+CREATE OR REPLACE PROCEDURE Mostrar_info1(p_codcomunidad comunidades.codcomunidad%TYPE, p_fecha DATE) AS
+    v_numdirectivos NUMBER:= 2;
+BEGIN
+    Info1_Presidente(p_codcomunidad, p_fecha);
+    Info1_Vicepresidente(p_codcomunidad, p_fecha);
+    Info1_Vocales(p_codcomunidad, p_fecha, v_numdirectivos);
+    dbms_output.put_line ('Numero de Directivos: ' || v_numdirectivos);
+END;
+/
+
 ------------------Informe2--------------------
 CREATE OR REPLACE PROCEDURE Mostrar_info2(p_codcomunidad comunidades.codcomunidad%TYPE) AS
 BEGIN
