@@ -57,7 +57,6 @@ Propietario2: D. xxxxx xxxxxxxx xxxxxxxxxx
 
 
 ------------------Principal--------------------
-
 CREATE OR REPLACE PROCEDURE MostrarInformes (p_tipo NUMBER, p_codcomunidad comunidades.codcomunidad%TYPE, p_fecha DATE DEFAULT sysdate) AS
 BEGIN
     CASE
