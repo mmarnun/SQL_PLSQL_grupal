@@ -56,7 +56,7 @@ Propietario2: D. xxxxx xxxxxxxx xxxxxxxxxx
 */
 
 
--- Solo el esqueleto de momento
+------------------Principal--------------------
 
 CREATE OR REPLACE PROCEDURE MostrarInformes (p_tipo NUMBER, p_codcomunidad comunidades.codcomunidad%TYPE, p_fecha DATE DEFAULT sysdate) AS
 BEGIN
@@ -86,6 +86,7 @@ BEGIN
 END;
 /
 
+------------------Cabecera--------------------
 create or replace function devolver_nombre_comunidad(p_codcomunidad comunidades.codcomunidad%type) return comunidades.nombre%type
 is
   v_nombre_comunidad comunidades.nombre%type;
@@ -121,17 +122,65 @@ BEGIN
     END IF;
 END;
 /
+    
+------------------Informe1--------------------
+CREATE OR REPLACE VIEW vista_info1 AS
+    SELECT hc.nombre_cargo, hc.codcomunidad, hc.fecha_inicio, hc.fecha_fin, p.DNI, p.nombre, p.apellidos, p.tlf_contacto
+    FROM historial_cargos hc, propietarios p
+    WHERE hc.DNI = p.DNI
+    ORDER BY nombre_cargo;
 
-CREATE OR REPLACE PROCEDURE Mostrar_info1(p_codcomunidad comunidades.codcomunidad%TYPE) AS
+CREATE OR REPLACE PROCEDURE Info1_Presidente(p_codcomunidad comunidades.codcomunidad%TYPE, p_fecha DATE) AS
+    v_presidente vista_info1%ROWTYPE;
 BEGIN
+    SELECT * INTO v_presidente
+    FROM vista_info1
+    WHERE nombre_cargo = 'Presidente'
+    AND codcomunidad = p_codcomunidad
+    AND fecha_inicio <= p_fecha
+    AND (fecha_fin IS NULL OR fecha_fin >= p_fecha);
+
+    dbms_output.put_line('PRESIDENTE D. ' || v_presidente.nombre || ' ' || v_presidente.apellidos || ' ' || v_presidente.tlf_contacto);
 END;
 /
 
+CREATE OR REPLACE PROCEDURE Info1_Vicepresidente(p_codcomunidad comunidades.codcomunidad%TYPE, p_fecha DATE) AS
+    v_vicepresidente vista_info1%ROWTYPE;
+BEGIN
+    SELECT * INTO v_vicepresidente
+    FROM vista_info1
+    WHERE nombre_cargo = 'Vicepresidente'
+    AND codcomunidad = p_codcomunidad
+    AND fecha_inicio <= p_fecha
+    AND (fecha_fin IS NULL OR fecha_fin >= p_fecha);
+
+    dbms_output.put_line('PRESIDENTE D. ' || v_vicepresidente.nombre || ' ' || v_vicepresidente.apellidos || ' ' || v_vicepresidente.tlf_contacto);
+END;
+/
+CREATE OR REPLACE PROCEDURE Info1_Vocales(p_codcomunidad comunidades.codcomunidad%TYPE, p_fecha DATE, p_numdirectivos IN OUT NUMBER) AS
+    CURSOR c_vocales IS
+       SELECT * 
+        FROM vista_info1
+        WHERE nombre_cargo = 'Vocal'
+        AND codcomunidad = p_codcomunidad
+        AND fecha_inicio <= p_fecha
+        AND (fecha_fin IS NULL OR fecha_fin >= p_fecha);
+BEGIN
+    dbms_output.put_line('VOCALES:');
+    FOR v_vocal IN c_vocales LOOP
+    dbms_output.put_line( '    ' || 'VOCAL D. ' || v_vocal.nombre || ' ' || v_vocal.apellidos || ' ' || v_vocal.tlf_contacto);
+    p_numdirectivos:= p_numdirectivos+1;
+    END LOOP;
+END;
+/
+
+------------------Informe2--------------------
 CREATE OR REPLACE PROCEDURE Mostrar_info2(p_codcomunidad comunidades.codcomunidad%TYPE) AS
 BEGIN
 END;
 /
 
+------------------Informe3--------------------
 CREATE OR REPLACE PROCEDURE Mostrar_info3(p_codcomunidad comunidades.codcomunidad%TYPE) AS
 BEGIN
 END;
