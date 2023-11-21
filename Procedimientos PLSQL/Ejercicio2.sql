@@ -91,26 +91,27 @@ is
   v_nombre_comunidad comunidades.nombre%type;
 begin
   select nombre into v_nombre_comunidad
-  from comunidad
+  from comunidades
   where codcomunidad = p_codcomunidad;
   return v_nombre_comunidad;
 end devolver_nombre_comunidad;
 /
 
-create or replace function devolver_codpostal(p_codcomunidad comunidades.codcomunidad%type) return comunidad.codigopostal%type
+create or replace function devolver_codpostal(p_codcomunidad comunidades.codcomunidad%type) return comunidades.codigopostal%type
 is
-  v_codpostal comunidad.codigopostal%type;
+  v_codpostal comunidades.codigopostal%type;
 begin
   select codigopostal into v_codpostal
-  from comunidad
+  from comunidades
   where codcomunidad = p_codcomunidad;
   return v_codpostal;
 end devolver_codpostal;
 /
 
-CREATE OR REPLACE PROCEDURE Mostrar_Cabecera(p_tipo NUMBER, p_codcomunidad comunidades.codcomunidad%TYPE, p_fecha DATE DEFAULT sysdate) AS
+CREATE OR REPLACE PROCEDURE Mostrar_Cabecera(p_tipo NUMBER, p_codcomunidad comunidades.codcomunidad%TYPE, p_fecha DATE DEFAULT sysdate)
+AS
     v_nombre_comunidad comunidades.nombre%TYPE;
-    v_codpostal
+    v_codpostal comunidades.codigopostal%type;
 BEGIN
   v_nombre_comunidad := devolver_nombre_comunidad(p_codcomunidad);
   v_codpostal := devolver_codpostal(p_codcomunidad);
