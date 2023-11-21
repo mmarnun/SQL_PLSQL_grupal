@@ -56,7 +56,8 @@ Propietario2: D. xxxxx xxxxxxxx xxxxxxxxxx
 */
 
 
-------------------Principal--------------------
+-- Solo el esqueleto de momento
+
 CREATE OR REPLACE PROCEDURE MostrarInformes (p_tipo NUMBER, p_codcomunidad comunidades.codcomunidad%TYPE, p_fecha DATE DEFAULT sysdate) AS
 BEGIN
     CASE
@@ -70,7 +71,7 @@ BEGIN
     WHEN p_tipo = 2 THEN
             dbms_output.put_line('INFORME DE RECIBOS IMPAGADOS');
             Mostrar_Cabecera (p_tipo, p_codcomunidad, p_fecha);
---            Mostrar_Info2(p_codcomunidad);
+            Mostrar_Info2(p_codcomunidad, p_fecha);
     WHEN p_tipo = 3 THEN
             dbms_output.put_line('INFORME DE PROPIEDADES');
             Mostrar_Cabecera (p_tipo, p_codcomunidad, p_fecha);
@@ -122,7 +123,7 @@ BEGIN
     END IF;
 END;
 /
-    
+
 ------------------Informe1--------------------
 CREATE OR REPLACE VIEW vista_info1 AS
     SELECT hc.nombre_cargo, hc.codcomunidad, hc.fecha_inicio, hc.fecha_fin, p.DNI, p.nombre, p.apellidos, p.tlf_contacto
@@ -183,20 +184,71 @@ BEGIN
     dbms_output.put_line ('Numero de Directivos: ' || v_numdirectivos);
 END;
 /
-
 ------------------Informe2--------------------
-CREATE OR REPLACE PROCEDURE Mostrar_info2(p_codcomunidad comunidades.codcomunidad%TYPE) AS
-BEGIN
-END;
+
+create or replace procedure mostrar_recibos(p_dni propietarios.dni%type)
+is
+    cursor c_recibos is
+        select numrecibo, fecha, importe
+        from recibos_cuotas
+        where dni=p_dni;
+    v_cont number := 1;
+begin
+    for v_recibo in c_recibos loop
+        dbms_output.put_line('NumRecibo'||v_cont||':'||v_recibo.numrecibo||'    FechaRecibo'||v_cont||': '||v_recibo.fecha||'   Importe'||v_cont||': '||v_recibo.importe);
+        v_cont := v_cont+1;
+    end loop;
+end;
 /
+
+create or replace function total_deu_propietario(p_dni propietarios.dni%type) return varchar2
+is
+    v_total varchar2(20);
+begin
+    select to_char(sum(r.importe), '999,999.99') into v_total
+    from recibos_cuotas r, propietarios p
+    where p.dni = r.dni and p.dni = p_dni;
+    return v_total;
+end;
+/
+
+create or replace function total_deu_comunidad(p_codcomunidad comunidades.codcomunidad%type) return varchar2
+is
+    v_total varchar2(20);
+begin
+    select to_char(sum(r.importe), '999,999.99') into v_total
+    from recibos_cuotas r
+    where r.codcomunidad = p_codcomunidad;
+    return v_total;
+end;
+/
+
+create or replace procedure Mostrar_Info2(p_codcomunidad comunidades.codcomunidad%TYPE, p_fecha DATE)
+is
+    cursor c_propietarios is
+        select p.nombre, p.apellidos, p.dni
+        from recibos_cuotas r, propietarios p
+        where p.dni = r.dni and r.pagado = 'No' and r.codcomunidad = p_codcomunidad
+        group by p.nombre, p.apellidos, p.dni
+        order by sum(r.importe) desc;
+    v_cont number := 1;
+begin
+    dbms_output.put_line(' ');
+    for propietario in c_propietarios loop
+        dbms_output.put_line('Propietario' || v_cont || ': D.' || propietario.nombre || ' ' || propietario.apellidos);
+        mostrar_recibos(propietario.dni);
+        dbms_output.put_line(' ');
+        dbms_output.put_line('Total Adeudado D.' || propietario.nombre || ' ' || propietario.apellidos || ': ' || total_deu_propietario(propietario.dni));
+        dbms_output.put_line(' ');
+        v_cont := v_cont + 1;
+    end loop;
+    dbms_output.put_line('Total Adeudado en la Comunidad: ' || total_deu_comunidad(p_codcomunidad));
+end;
+/
+
 
 ------------------Informe3--------------------
 CREATE OR REPLACE PROCEDURE Mostrar_info3(p_codcomunidad comunidades.codcomunidad%TYPE) AS
 BEGIN
 END;
 /
-
-------------------Ejemplos de uso--------------------
-EXEC MostrarInformes(1, 'AAAA1', TO_DATE('31-DEC-2016', 'dd-MON-YYYY'))
-EXEC MostrarInformes(2, 'AAAA2', TO_DATE('31-DEC-2016', 'dd-MON-YYYY'))
-EXEC MostrarInformes(3, 'AAAA3')
