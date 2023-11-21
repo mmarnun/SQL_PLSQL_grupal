@@ -86,18 +86,34 @@ BEGIN
 END;
 /
 
+create or replace function devolver_nombre_comunidad(p_codcomunidad comunidades.codcomunidad%type) return comunidades.nombre%type
+is
+  v_nombre_comunidad comunidades.nombre%type;
+begin
+  select nombre into v_nombre_comunidad
+  from comunidad
+  where codcomunidad = p_codcomunidad;
+  return v_nombre_comunidad;
+end devolver_nombre_comunidad;
+/
+
+create or replace function devolver_codpostal(p_codcomunidad comunidades.codcomunidad%type) return comunidad.codigopostal%type
+is
+  v_codpostal comunidad.codigopostal%type;
+begin
+  select codigopostal into v_codpostal
+  from comunidad
+  where codcomunidad = p_codcomunidad;
+  return v_codpostal;
+end devolver_codpostal;
+/
+
 CREATE OR REPLACE PROCEDURE Mostrar_Cabecera(p_tipo NUMBER, p_codcomunidad comunidades.codcomunidad%TYPE, p_fecha DATE DEFAULT sysdate) AS
     v_nombre_comunidad comunidades.nombre%TYPE;
     v_codpostal
 BEGIN
-    SELECT nombre INTO v_nombre_comunidad
-    FROM comunidad
-    WHERE codcomunidad = p_codcomunidad;
-
-    SELECT codigopostal INTO v_codpostal
-    FROM comunidad
-    WHERE codcomunidad = p_codcomunidad;
-
+  v_nombre_comunidad := devolver_nombre_comunidad(p_codcomunidad);
+  v_codpostal := devolver_codpostal(p_codcomunidad);
     dbms_output.put_line('Comunidad: ' || v_nombre_comunidad);
     dbms_output.put_line('Población Comunidad: ' || v_codpostal);
     IF p_tipo != 3 THEN
