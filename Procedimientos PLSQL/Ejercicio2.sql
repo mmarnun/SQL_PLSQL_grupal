@@ -195,3 +195,8 @@ CREATE OR REPLACE PROCEDURE Mostrar_info3(p_codcomunidad comunidades.codcomunida
 BEGIN
 END;
 /
+
+------------------Ejemplos de uso--------------------
+EXEC MostrarInformes(1, 'AAAA1', TO_DATE('31-DEC-2016', 'dd-MON-YYYY'))
+EXEC MostrarInformes(2, 'AAAA2', TO_DATE('31-DEC-2016', 'dd-MON-YYYY'))
+EXEC MostrarInformes(3, 'AAAA3')
