@@ -52,17 +52,21 @@ CREATE OR REPLACE FUNCTION esta_en_horario_apertura(
 IS
     v_estado NUMBER;
 BEGIN
-    SELECT COUNT(*)
+    SELECT 1
     INTO v_estado
     FROM horarios_apertura
     WHERE codcomunidad = p_codcomunidad
         AND codpropiedad = p_codpropiedad
         AND TO_TIMESTAMP(TO_CHAR(SYSDATE, 'YYYY-MM-DD') || ' ' || TO_CHAR(hora_apertura, 'HH24:MI:SS'), 'YYYY-MM-DD HH24:MI:SS') <= SYSTIMESTAMP
-        AND TO_TIMESTAMP(TO_CHAR(SYSDATE, 'YYYY-MM-DD') || ' ' || TO_CHAR(hora_cierre, 'HH24:MI:SS'), 'YYYY-MM-DD HH24:MI:SS') >= SYSTIMESTAMP;
-
+        AND TO_TIMESTAMP(TO_CHAR(SYSDATE, 'YYYY-MM-DD') || ' ' || TO_CHAR(hora_cierre, 'HH24:MI:SS'), 'YYYY-MM-DD HH24:MI:SS') >= SYSTIMESTAMP
+    fetch first 1 row only;
     RETURN v_estado;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RETURN 0;
 END esta_en_horario_apertura;
 /
+
 
 CREATE OR REPLACE FUNCTION estado_local(
     p_codcomunidad IN VARCHAR2,
@@ -110,7 +114,7 @@ END;
 DECLARE
     v_estado NUMBER;
 BEGIN
-    v_estado := estado_local('AAAA1', '0002');
+    v_estado := estado_local('AAAA3', '0001');
     DBMS_OUTPUT.PUT_LINE('Estado del local: ' || v_estado);
 END;
 /
