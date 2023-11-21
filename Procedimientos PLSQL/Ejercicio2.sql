@@ -66,7 +66,7 @@ BEGIN
         END IF;
             dbms_output.put_line('INFORME DE CARGOS');
             Mostrar_Cabecera (p_tipo, p_codcomunidad, p_fecha);
-            Mostrar_Info1(p_codcomunidad);
+            Mostrar_Info1(p_codcomunidad, p_fecha);
     WHEN p_tipo = 2 THEN
             dbms_output.put_line('INFORME DE RECIBOS IMPAGADOS');
             Mostrar_Cabecera (p_tipo, p_codcomunidad, p_fecha);
