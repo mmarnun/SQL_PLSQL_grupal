@@ -56,37 +56,8 @@ Propietario2: D. xxxxx xxxxxxxx xxxxxxxxxx
 */
 
 
--- Solo el esqueleto de momento
-
-CREATE OR REPLACE PROCEDURE MostrarInformes (p_tipo NUMBER, p_codcomunidad comunidades.codcomunidad%TYPE, p_fecha DATE DEFAULT sysdate) AS
-BEGIN
-    CASE
-    WHEN p_tipo = 1 THEN
-        IF p_fecha is null THEN
-            RAISE_APPLICATION_ERROR (20001, 'Se debe especificar la fecha de la junta directiva como tercer parámetro en informes de tipo 1.');
-        END IF;
-            dbms_output.put_line('INFORME DE CARGOS');
-            Mostrar_Cabecera (p_tipo, p_codcomunidad, p_fecha);
-            Mostrar_Info1(p_codcomunidad, p_fecha);
-    WHEN p_tipo = 2 THEN
-            dbms_output.put_line('INFORME DE RECIBOS IMPAGADOS');
-            Mostrar_Cabecera (p_tipo, p_codcomunidad, p_fecha);
-            Mostrar_Info2(p_codcomunidad, p_fecha);
-    WHEN p_tipo = 3 THEN
-            dbms_output.put_line('INFORME DE PROPIEDADES');
-            Mostrar_Cabecera (p_tipo, p_codcomunidad, p_fecha);
---            Mostrar_Info3(p_codcomunidad);
-    ELSE
-        IF p_codcomunidad = NULL THEN
-            RAISE_APPLICATION_ERROR (20002, 'Uso: exec MostrarInformes < 1 | 2 | 3 > <codcomunidad> [Fecha]');
-        ELSE
-            RAISE_APPLICATION_ERROR (20003, 'El tipo de informe especificado no existe');
-        END IF;
-    END CASE;
-END;
-/
-
 ------------------Cabecera--------------------
+-- Hecho por Fran y Alex
 create or replace function devolver_nombre_comunidad(p_codcomunidad comunidades.codcomunidad%type) return comunidades.nombre%type
 is
   v_nombre_comunidad comunidades.nombre%type;
@@ -125,6 +96,7 @@ END;
 /
 
 ------------------Informe1--------------------
+-- Hecho Por Fran
 CREATE OR REPLACE VIEW vista_info1 AS
     SELECT hc.nombre_cargo, hc.codcomunidad, hc.fecha_inicio, hc.fecha_fin, p.DNI, p.nombre, p.apellidos, p.tlf_contacto
     FROM historial_cargos hc, propietarios p
@@ -185,6 +157,7 @@ BEGIN
 END;
 /
 ------------------Informe2--------------------
+--Hecho Por Alex
 
 create or replace procedure mostrar_recibos(p_dni propietarios.dni%type)
 is
@@ -248,30 +221,49 @@ end;
 
 
 ------------------Informe3--------------------
+-- Hecho por Juanma y Fran
+CREATE OR REPLACE FUNCTION Devolver_Tipo (p_codpropiedad VARCHAR2, p_codcomunidad VARCHAR2) 
+RETURN VARCHAR2 IS
+  v_tipo VARCHAR2(30);
+BEGIN
+  SELECT
+    CASE
+      WHEN EXISTS (SELECT 1 FROM oficinas WHERE codpropiedad = p_codpropiedad AND codcomunidad = p_codcomunidad) THEN 'Oficina'
+      WHEN EXISTS (SELECT 1 FROM locales WHERE codpropiedad = p_codpropiedad AND codcomunidad = p_codcomunidad) THEN 'Local'
+      WHEN EXISTS (SELECT 1 FROM viviendas WHERE codpropiedad = p_codpropiedad AND codcomunidad = p_codcomunidad) THEN 'Vivienda'
+      ELSE 'Otros'
+    END INTO v_tipo
+  FROM DUAL;
+  RETURN v_tipo;
+END;
+/
 
-CREATE VIEW vista_propiedades_info3 AS
-        SELECT pr.codpropiedad, pr.portal, pr.planta, pr.letra, pr.porcentaje_participacion, i.nombre AS inquilino_nombre, i.apellidos AS inquilino_apellidos
+CREATE OR REPLACE VIEW vista_propiedades_info3 AS
+        SELECT pr.DNI_propietario, pr.codpropiedad, pr.codcomunidad, pr.portal, pr.planta, pr.letra, pr.porcentaje_participacion, i.nombre AS inquilino_nombre, i.apellidos AS inquilino_apellidos
         FROM propiedades pr
         LEFT JOIN inquilinos i ON pr.codpropiedad = i.codpropiedad AND pr.codcomunidad = i.codcomunidad;
+
 
 CREATE OR REPLACE PROCEDURE info3_propiedad(p_propietario propietarios.DNI%TYPE, p_participacion OUT FLOAT) AS
     CURSOR c_propiedades IS
         SELECT *
-        FROM vista_propiedades_info3;
+        FROM vista_propiedades_info3
+        WHERE DNI_propietario = p_propietario;
     v_totalparticipacion NUMBER:= 0;
     v_numpropiedades NUMBER:= 0;
+    v_tipo VARCHAR2(50);
 BEGIN
     FOR v_propiedad IN c_propiedades LOOP
-        v_numpropiedades = v_numpropiedades + 1;
-        dbms_output.put_line ('     Propiedad ' || v_numpropiedades || ': ' || v_propiedad.codpropiedad || ' ' || /*v_propiedad.tipo*/ || ' ' || v_propiedad.portal || ' ' || v_propiedad.planta || v_propiedad.letra || ' ' || round(v_propiedad.porcentaje_participacion, 2) || '% ' || v_propiedad.inquilino_nombre || ' ' || v_propiedad.inquilino_apellidos );
-        v_totalparticipacion = v_totalparticipacion + v_propiedad.porcentaje_participacion;
+        v_tipo := Devolver_Tipo(v_propiedad.codpropiedad, v_propiedad.codcomunidad);
+        v_numpropiedades := v_numpropiedades + 1;
+        dbms_output.put_line ('     Propiedad ' || v_numpropiedades || ': ' || v_propiedad.codpropiedad || ' ' || v_tipo || ' ' || v_propiedad.portal || ' ' || v_propiedad.planta || v_propiedad.letra || ' ' || round(v_propiedad.porcentaje_participacion, 2) || '% ' || v_propiedad.inquilino_nombre || ' ' || v_propiedad.inquilino_apellidos );
+        v_totalparticipacion := v_totalparticipacion + v_propiedad.porcentaje_participacion;
     END LOOP;
-    -- por aqui un avg de todo, que se me hace mas facil hacerlo a mano que hacerle un avg a una lista que quieres que te diga (divide total participacion entre numpropiedades)
-    -- guardas el avg en p_participación y yasta, se te guarda en v_participación en el otro procedimiento.
+        p_participacion := (v_totalparticipacion / v_numpropiedades);
 END;
 /
--- como añado el tipo de propiedad a la vista de arriba (local oficina vivienda) ayuda alex
-CREATE VIEW vista_propietarios_info3
+
+CREATE OR REPLACE VIEW vista_propietarios_info3 AS
         SELECT p.DNI, p.nombre, p.apellidos, pr.codcomunidad
         FROM propietarios p, propiedades pr
         WHERE p.dni = pr.dni_propietario;
@@ -285,10 +277,41 @@ CREATE OR REPLACE PROCEDURE Mostrar_info3(p_codcomunidad comunidades.codcomunida
     v_contador NUMBER:= 0;
 BEGIN
     FOR v_propietario IN c_propietarios LOOP
-        v_contador = v_contador + 1
+        v_contador := v_contador + 1;
         dbms_output.put_line('Propietario ' || v_contador || ': D.' || v_propietario.nombre || ' ' || v_propietario.apellidos);
         info3_propiedad(v_propietario.DNI, v_participacion);
         dbms_output.put_line ('Porcentaje de Participación Total Propietario1: ' || round(v_participacion, 2) || '%');
     END LOOP;
 END;
 /
+
+--------------------------------Procedimiento Principal-----------------------------------
+CREATE OR REPLACE PROCEDURE MostrarInformes (p_tipo NUMBER, p_codcomunidad comunidades.codcomunidad%TYPE, p_fecha DATE DEFAULT sysdate) AS
+BEGIN
+    CASE
+    WHEN p_tipo = 1 THEN
+        IF p_fecha is null THEN
+            RAISE_APPLICATION_ERROR (20001, 'Se debe especificar la fecha de la junta directiva como tercer parámetro en informes de tipo 1.');
+        END IF;
+            dbms_output.put_line('INFORME DE CARGOS');
+            Mostrar_Cabecera (p_tipo, p_codcomunidad, p_fecha);
+            Mostrar_Info1(p_codcomunidad, p_fecha);
+    WHEN p_tipo = 2 THEN
+            dbms_output.put_line('INFORME DE RECIBOS IMPAGADOS');
+            Mostrar_Cabecera (p_tipo, p_codcomunidad, p_fecha);
+            Mostrar_Info2(p_codcomunidad, p_fecha);
+    WHEN p_tipo = 3 THEN
+            dbms_output.put_line('INFORME DE PROPIEDADES');
+            Mostrar_Cabecera (p_tipo, p_codcomunidad, p_fecha);
+--            Mostrar_Info3(p_codcomunidad);
+    ELSE
+        IF p_codcomunidad = NULL THEN
+            RAISE_APPLICATION_ERROR (20002, 'Uso: exec MostrarInformes < 1 | 2 | 3 > <codcomunidad> [Fecha]');
+        ELSE
+            RAISE_APPLICATION_ERROR (20003, 'El tipo de informe especificado no existe');
+        END IF;
+    END CASE;
+END;
+/
+
+
