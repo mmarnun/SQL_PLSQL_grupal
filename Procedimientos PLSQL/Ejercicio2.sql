@@ -248,7 +248,47 @@ end;
 
 
 ------------------Informe3--------------------
-CREATE OR REPLACE PROCEDURE Mostrar_info3(p_codcomunidad comunidades.codcomunidad%TYPE) AS
+
+CREATE VIEW vista_propiedades_info3 AS
+        SELECT pr.codpropiedad, pr.portal, pr.planta, pr.letra, pr.porcentaje_participacion, i.nombre AS inquilino_nombre, i.apellidos AS inquilino_apellidos
+        FROM propiedades pr
+        LEFT JOIN inquilinos i ON pr.codpropiedad = i.codpropiedad AND pr.codcomunidad = i.codcomunidad;
+
+CREATE OR REPLACE PROCEDURE info3_propiedad(p_propietario propietarios.DNI%TYPE, p_participacion OUT FLOAT) AS
+    CURSOR c_propiedades IS
+        SELECT *
+        FROM vista_propiedades_info3;
+    v_totalparticipacion NUMBER:= 0;
+    v_numpropiedades NUMBER:= 0;
 BEGIN
+    FOR v_propiedad IN c_propiedades LOOP
+        v_numpropiedades = v_numpropiedades + 1;
+        dbms_output.put_line ('     Propiedad ' || v_numpropiedades || ': ' || v_propiedad.codpropiedad || ' ' || /*v_propiedad.tipo*/ || ' ' || v_propiedad.portal || ' ' || v_propiedad.planta || v_propiedad.letra || ' ' || round(v_propiedad.porcentaje_participacion, 2) || '% ' || v_propiedad.inquilino_nombre || ' ' || v_propiedad.inquilino_apellidos );
+        v_totalparticipacion = v_totalparticipacion + v_propiedad.porcentaje_participacion;
+    END LOOP;
+    -- por aqui un avg de todo, que se me hace mas facil hacerlo a mano que hacerle un avg a una lista que quieres que te diga (divide total participacion entre numpropiedades)
+    -- guardas el avg en p_participación y yasta, se te guarda en v_participación en el otro procedimiento.
+END;
+/
+-- como añado el tipo de propiedad a la vista de arriba (local oficina vivienda) ayuda alex
+CREATE VIEW vista_propietarios_info3
+        SELECT p.DNI, p.nombre, p.apellidos, pr.codcomunidad
+        FROM propietarios p, propiedades pr
+        WHERE p.dni = pr.dni_propietario;
+
+CREATE OR REPLACE PROCEDURE Mostrar_info3(p_codcomunidad comunidades.codcomunidad%TYPE) AS
+    CURSOR c_propietarios IS
+        SELECT *
+        FROM vista_propietarios_info3
+        WHERE codcomunidad = p_codcomunidad;
+    v_participacion FLOAT;
+    v_contador NUMBER:= 0;
+BEGIN
+    FOR v_propietario IN c_propietarios LOOP
+        v_contador = v_contador + 1
+        dbms_output.put_line('Propietario ' || v_contador || ': D.' || v_propietario.nombre || ' ' || v_propietario.apellidos);
+        info3_propiedad(v_propietario.DNI, v_participacion);
+        dbms_output.put_line ('Porcentaje de Participación Total Propietario1: ' || round(v_participacion, 2) || '%');
+    END LOOP;
 END;
 /
